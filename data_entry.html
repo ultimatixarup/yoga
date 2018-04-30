@@ -893,6 +893,12 @@ $.ajax({
 
 
 }
+		
+		
+		$( "#tabs-2-data" ).load( "videoconfig.php" );
+		$( "#tabs-3-data" ).load( "https://s3-us-west-2.amazonaws.com/yogamap/feedback.html" );
+		$( "#tabs-4-data" ).load( "https://s3-us-west-2.amazonaws.com/yogamap/yogamap.html" );
+		
 
 	</script>
 
@@ -907,7 +913,10 @@ $.ajax({
 <div id="myTabs" class="container">
   <ul>
     
-    <li><a href="#tabs-1">Levels</a></li>
+    <li><a href="#tabs-1">Yoga Configuration</a></li>
+	    <li><a href="#tabs-2">Video Configuration</a></li>
+	    <li><a href="#tabs-3">Feedback</a></li>
+	    <li><a href="#tabs-4">Yoga Map</a></li>
     
     
   </ul>
@@ -915,6 +924,15 @@ $.ajax({
   
   <input type="hidden" id="dataid">
   
+	<div id="tabs-2">
+		<div class="container" id="tabs-2-data"></div>
+	
+	</div>
+	<div id="tabs-3"> <div class="container" id="tabs-3-data"></div> </div>
+	<div id="tabs-4"><div class="container" id="tabs-3-data"></div> </div>
+	
+	
+	
   
   <div id="tabs-1">
     <div class="container">
