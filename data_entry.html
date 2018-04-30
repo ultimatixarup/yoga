@@ -893,10 +893,17 @@ $.ajax({
 
 
 }
+
+
+$( document ).ready(function() {
+
+               document.getElementById("tabs-2-data").innerHTML='<object width="100%" height="100%" type="text/html" data="http://getwellbyoga.org/yoga/videoconfig.php" ></object>';
+                document.getElementById("tabs-3-data").innerHTML='<object type="text/html" width="100%" height="100%" data="https://s3-us-west-2.amazonaws.com/yogamap/feedback.html" ></object>';
+                document.getElementById("tabs-4-data").innerHTML='<object type="text/html" width="100%" height="100%"  data="https://s3-us-west-2.amazonaws.com/yogamap/yogamap.html" ></object>';
+
+
+});
 		
-		document.getElementById("tabs-2-data").innerHTML='<object type="text/html" data="videoconfig.php" ></object>';
-		document.getElementById("tabs-3-data").innerHTML='<object type="text/html" data="https://s3-us-west-2.amazonaws.com/yogamap/feedback.html" ></object>';
-		document.getElementById("tabs-4-data").innerHTML='<object type="text/html" data="https://s3-us-west-2.amazonaws.com/yogamap/yogamap.html" ></object>';
 		
 		
 	</script>
@@ -923,12 +930,12 @@ $.ajax({
   
   <input type="hidden" id="dataid">
   
-	<div id="tabs-2">
-		<div class="container" id="tabs-2-data"></div>
+	<div id="tabs-2" style="height:100%;width:100%" >
+		<div class="container" id="tabs-2-data" style="height:100%;width:100%"></div>
 	
 	</div>
-	<div id="tabs-3"> <div class="container" id="tabs-3-data"></div> </div>
-	<div id="tabs-4"><div class="container" id="tabs-3-data"></div> </div>
+	<div id="tabs-3" style="height:100%;width:100%"> <div class="container" id="tabs-3-data" style="height:100%;width:100%"></div> </div>
+	<div id="tabs-4" style="height:100%;width:100%"><div class="container" id="tabs-4-data" style="height:100%;width:100%"></div> </div>
 	
 	
 	
