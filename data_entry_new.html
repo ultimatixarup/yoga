@@ -1,0 +1,1095 @@
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Yoga Entry</title>
+	<link rel="shortcut icon" type="image/png" href="/media/images/favicon.png">
+	<link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.10/css/dataTables.bootstrap.min.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css">
+
+    
+	<style type="text/css" class="init">
+		#tabs { 
+    padding: 0px; 
+    background: none; 
+    border-width: 0px; 
+} 
+
+#tabs .ui-tabs-nav { 
+    padding-left: 0px; 
+    background: transparent; 
+    border-width: 0px 0px 1px 0px; 
+    -moz-border-radius: 0px; 
+    -webkit-border-radius: 0px; 
+    border-radius: 0px; 
+} 
+#tabs .ui-tabs-panel { 
+  
+  
+    border-width: 0px 1px 1px 1px; 
+}
+        
+        .ui-widget-content{
+          background:white !important;
+        }
+        
+        form { display: block; margin: 20px auto; background: #eee; border-radius: 10px; padding: 15px }
+
+.progress { position:relative; width:400px; border: 1px solid #ddd; padding: 1px; border-radius: 3px; }
+.bar { background-color: #B4F5B4; width:0%; height:20px; border-radius: 3px; }
+.percent { position:absolute; display:inline-block; top:3px; left:48%; }
+        
+
+/* Start by setting display:none to make this hidden.
+   Then we position it in relation to the viewport window
+   with position:fixed. Width, height, top and left speak
+   for themselves. Background we set to 80% white with
+   our animation centered, and no-repeating */
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('http://i.stack.imgur.com/FhHRx.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading {
+    overflow: hidden;   
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal {
+    display: block;
+}
+     
+#fade {
+    display: none;
+    position:absolute;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    background-color: #ababab;
+    z-index: 1001;
+    -moz-opacity: 0.8;
+    opacity: .70;
+    filter: alpha(opacity=80);
+}
+
+#modal {
+    display: none;
+    position: absolute;
+    top: 45%;
+    left: 45%;
+    width: 100px;
+    height: 100px;
+    padding:30px 15px 0px;
+    border: 3px solid #ababab;
+    box-shadow:1px 1px 10px #ababab;
+    border-radius:20px;
+    background-color: white;
+    z-index: 1002;
+    text-align:center;
+    overflow: auto;
+}
+        
+        table.dataTable span.highlight {
+  background-color: #FFFF88;
+}
+
+select {
+            color: black !important
+        }
+        
+        
+                
+        table.dataTable tbody th, table.dataTable tbody td{
+        
+        font-family: 	Arial, Verdana, sans-serif;
+	color:		#0000FF;
+	font-size:	10px;
+        }
+        
+        .container{
+            width: 1308px;
+        }
+        
+	</style>
+        
+
+ <link href="http://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+      <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+     
+      
+	
+	
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js">
+	</script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.10/js/dataTables.bootstrap.min.js">
+	</script>
+<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.2.21.min.js"></script>
+    <script src="http://malsup.github.com/jquery.form.js"></script>
+   
+    	<script type="text/javascript" language="javascript" src="https://bartaz.github.io/sandbox.js/jquery.highlight.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/plug-ins/1.10.10/features/searchHighlight/dataTables.searchHighlight.min.js"></script>
+    
+    
+	<script type="text/javascript" class="init">
+var dialog;
+
+var availableTags = [];
+
+$( document ).ready(function() {
+	 $body = $("body");
+
+    $(document).on({
+        ajaxStart: function() { $body.addClass("loading");    },
+         ajaxStop: function() { $body.removeClass("loading"); }    
+    });
+    
+
+        
+        
+    $(document)
+  .ajaxStart(function () {
+   openModal();
+  })
+  .ajaxStop(function () {
+    closeModal();
+  });
+
+  populateData();
+ 
+  populateAvailableTypes();
+  populateDisease();
+  setTimeout('loadAutoCmp()',3000);
+  
+
+    
+});
+
+var loadAutoCmp = function(){
+ $( "#type" ).autocomplete({
+      source: availableTags
+});
+    
+}
+
+var populateAvailableTypes = function(){
+    
+   $.ajax({
+        type: "GET",
+        url: "gettypes.php",
+        success: function(fdata){
+            console.log(fdata);
+            availableTags = JSON.parse(fdata);
+        }, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });   
+}
+
+
+    function openModal() {
+        document.getElementById('modal').style.display = 'block';
+        document.getElementById('fade').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('fade').style.display = 'none';
+}   
+   
+
+var sourceincontext;
+var isedit = false;
+
+var dialog;    
+$(function() {
+    var form,
+ 
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+      name = $( "#name" ),
+      email = $( "#email" ),
+      password = $( "#password" ),
+      allFields = $( [] ).add( name ).add( email ).add( password ),
+      tips = $( ".validateTips" );
+ 
+    function updateTips( t ) {
+      tips
+        .text( t )
+        .addClass( "ui-state-highlight" );
+      setTimeout(function() {
+        tips.removeClass( "ui-state-highlight", 1500 );
+      }, 500 );
+    }
+ 
+    
+ 
+    function checkRegexp( o, regexp, n ) {
+      if ( !( regexp.test( o.val() ) ) ) {
+        o.addClass( "ui-state-error" );
+        updateTips( n );
+        return false;
+      } else {
+        return true;
+      }
+    }
+ 
+    
+ 
+    dialog = $( "#dialog-form" ).dialog({
+      autoOpen: false,
+      height: 500,
+      width: 600,
+      modal: true,
+      position: { 
+            my: 'top',
+            at: 'top'
+            
+        },
+      
+      
+    });
+ 
+    
+ 
+    $( "#create-user" ).button().on( "click", function() {
+      dialog.dialog( "open" );
+    });
+    
+  }); 
+
+
+$(function() {
+
+
+    $( "#myTabs" ).tabs();
+  
+    
+//    populateData(); 
+    
+});
+        
+   function saveData(){
+if($("#name").val().length==0){
+
+alert("please enter a name");
+return;
+}
+
+if($("#label").val().length==0){
+
+alert("please enter a app label");
+return;
+}
+
+if($("#type").val()==0){
+alert("please enter a type");
+return;
+
+}
+      var data = "{\"name\":\""+$("#name").val() + "\",\"description\":\"" + $("#description").val()+"\",\"label\":\"" + $("#label").val()+"\",\"comment\":\"" + $("#comment1").val()+"\",\"type\":\""+$("#type").val()+"\",\"data\":\""+$("#data").val()+"\",\"isedit\":\""+isedit+"\",\"dataid\":\""+$("#dataid").val()+"\",\"subtype\":\""+$("#subtype").val()+"\"}";
+    
+  //alert(data);
+  
+   $.ajax({
+        type: "POST",
+        url: "dep.php",
+        contentType: "application/json",
+        data: data,
+        success: function(fdata){processTable(fdata);}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+  
+}
+
+
+function populateData(){
+ $.ajax({
+        type: "GET",
+        url: "deplist.php",
+        success: function(fdata){processTable(fdata);}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+
+
+} 
+
+
+function clearData(){
+    
+     $('#dataid').val("");
+        $('#name').val("");
+        $('#description').val("");
+        $('#type').val("");
+        $('#data').val("");
+        isedit = false;
+    
+    
+    
+}
+        
+        var table;
+var configtable;
+var selectedProcedure;        
+var selected = [];  
+function processTable(fdata){
+    selected = [];
+    if(fdata.length==0){
+        //alert("No data found for your query");
+return;
+        
+    }
+    if(table){
+        table.destroy();
+    }
+ 
+ table = $('#example').DataTable( {
+  			aaData:JSON.parse(fdata),
+            "bPaginate": false,
+           
+            searchHighlight: true,
+            "columnDefs": [ {
+                "targets": -1,
+                "data": null,
+                "defaultContent": "<button id='download'>Configure</button>"
+             },
+             {
+                "targets": -2,
+                "data": null,
+                "defaultContent": "<button id='delete'>Delete</button>"
+             },
+             {
+                "targets": -3,
+                "data": null,
+                "defaultContent": "<select id='rank'>"+getOptionHTML()+"</select>"
+             },
+             {
+                "targets": -4,
+                "data": null,
+                "defaultContent": "<button id='edit'>Edit</button>"
+             }
+
+            ],
+            "rowCallback": function( row, data, index ) {
+                if(data[6]!=0){
+                    $('td:eq(6) #rank', row).val(data[6]);
+                }
+              },
+            "order": [[ 4, 'asc' ]],
+        "displayLength": 25,
+        "drawCallback": function ( settings ) {
+            var api = this.api();
+            var rows = api.rows( {page:'current'} ).nodes();
+            var last=null;
+ 
+            api.column(4, {page:'current'} ).data().each( function ( group, i ) {
+                if ( last !== group ) {
+                    $(rows).eq( i ).before(
+                        '<tr class="group"><td colspan="5">'+group+'</td></tr>'
+                    );
+ 
+                    last = group;
+                }
+            } );
+        }
+           
+      
+            
+		} );
+        
+         // Order by the grouping
+    $('#example tbody').on( 'click', 'tr.group', function () {
+        var currentOrder = table.order()[0];
+        if ( currentOrder[0] === 2 && currentOrder[1] === 'asc' ) {
+            table.order( [ 4, 'desc' ] ).draw();
+        }
+        else {
+            table.order( [ 4, 'asc' ] ).draw();
+        }
+    } );
+        
+$('#example tbody').on( 'change', '#rank', function () {
+        var data = table.row( $(this).parents('tr') ).data();
+        saveRank(data[0],$(this).val());
+    } );        
+        
+        
+$('#example tbody').on( 'click', '#download', function () {
+        var data = table.row( $(this).parents('tr') ).data();
+        populateTypes();
+        sourceincontext = data[1];
+        dialog.dialog( "open" );
+        populateConfig(sourceincontext);
+        //location.href = "/diamondback/app/download/"+data[5]; 
+    } );
+    
+    $('#example tbody').on( 'click', '#edit', function () {
+        var data = table.row( $(this).parents('tr') ).data();
+        var sourcedata = data[0];
+        $('#dataid').val(data[0]);
+        $('#name').val(data[1]);
+        $('#label').val(data[2]);
+        $('#description').val(data[3]);
+        $('#type').val(data[4]);
+        $('#subtype').val(data[5]);
+        $('#data').val(data[6]);
+        isedit = true;
+        
+        //alert(sourcedata);
+        //location.href = "/diamondback/app/download/"+data[5]; 
+    } );
+
+
+$('#example tbody').on( 'click', '#delete', function () {
+   var result = confirm("Want to delete?");
+if (result) {
+    //Logic to delete the item
+
+        var data = table.row( $(this).parents('tr') ).data();
+if(data)        
+deleteData(data[0]);    
+        table
+        .row( $(this).parents('tr') )
+        .remove()
+        .draw();
+} });
+}
+
+
+
+function saveRank(field1,rank){
+    
+    
+    $.ajax({
+        type: "GET",
+        url: "saverank.php?id="+field1+"&rank="+rank,
+        success: function(fdata){
+            
+        }, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+}
+
+
+function deleteData(data){
+
+   $.ajax({
+        type: "POST",
+        url: "deletelevel.php?id="+data,
+        data: data,
+        success: function(fdata){
+        }, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+
+
+
+}
+
+
+function populateDisease(){
+
+$.ajax({
+        type: "GET",
+        url: "getvalues.php?type=disease",
+        success: function(fdata){populateDiseaseDropdown(JSON.parse(fdata));}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+}
+
+function populateDiseaseDropdown(fdata){
+
+$('#disease select').empty();
+$('#disease select').append('<option>Select</option>');
+for(i = 0; i < fdata.length; i++) {
+   $('#disease select').append('<option value='+processvalue(fdata[i][5])+'>'+fdata[i][5]+'</option>');
+}
+
+}
+
+
+function populateConfig(source){
+
+
+$.ajax({
+        type: "GET",
+        url: "getconfiguration.php?source="+source,
+        success: function(fdata){showConfigTable(fdata);}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+
+}
+        
+function populateTypes(){
+
+$.ajax({
+        type: "GET",
+        url: "gettypes.php",
+        success: function(fdata){populateTypesDropdown(JSON.parse(fdata));}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+
+
+
+
+
+}   
+function populateTypesDropdown(types){
+
+$('#type select').empty();
+$('#type select').append('<option>Select</option>');
+for(i = 0; i < types.length; i++) {
+   $('#type select').append('<option value='+types[i]+'>'+types[i]+'</option>');
+}
+
+}
+
+
+function typeChanged(){
+ var type = $('#type_combo').val();
+ populateSubValues(type);
+
+}
+
+function subTypeChanged(){
+ var type = $('#type_combo').val();
+ var subtype = $('#subtype_combo').val();
+ populateValues(type,subtype);
+
+}
+
+function populateSubValues(type){
+
+$.ajax({
+        type: "GET",
+        url: "getsubtype.php?type="+type,
+        success: function(fdata){populateSubTypeDropdown(JSON.parse(fdata));}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+
+} 
+
+function populateValues(type,subtype){
+
+$.ajax({
+        type: "GET",
+        url: "getvaluesforsubtype.php?type="+type+"&subtype="+subtype,
+        success: function(fdata){populateValueDropdown(JSON.parse(fdata));}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+
+}   
+       
+function populateValueDropdown(data){
+
+$('#value select').empty();
+$('#value select').append('<option>Select</option>');
+
+for(i = 0; i < data.length; i++) {
+   $('#value select').append('<option value='+processvalue(data[i][0])+'>'+data[i][0]+'</option>');
+}
+}
+
+function populateSubTypeDropdown(data){
+
+$('#subtype select').empty();
+$('#subtype select').append('<option>Select</option>');
+
+for(i = 0; i < data.length; i++) {
+   $('#subtype select').append('<option value='+processvalue(data[i][0])+'>'+data[i][0]+'</option>');
+}
+
+
+
+}
+function processvalue(data){
+    //console.log("process value="+data);
+    if(data!=null){
+    if(data.indexOf(' ') > 0){
+        data = replacechar(data,' ','#')
+    } 
+    }
+    console.log("process value="+data);
+return data;
+
+}
+function reprocessvalue(data){
+     //console.log("process value="+data);
+    if(data.indexOf('#') > 0){
+        data = replacechar(data,'#',' ')
+    } 
+    console.log("process value="+data);
+return data;
+}
+
+function replacechar(data,char1,char2){
+    while(data.indexOf(char1) > 0){
+        data = data.replace(char1,char2);
+    }
+return data;    
+}
+
+function copyConfiguration(type,subtype){
+    if($("#disease_combo").val() == null || $("#disease_combo").val() == "Select" ){
+    alert("please select a disease");
+    return;  
+  }
+    var data = "{\"source\":\""+sourceincontext + "\",\"istype\":\""+type+"\",\"issubtype\":\""+subtype+"\",\"destination\":\"" + reprocessvalue($("#disease_combo").val())+"\"}";
+    
+  
+   $.ajax({
+        type: "POST",
+        url: "copyconfiguration.php",
+        data: data,
+        success: function(fdata){showConfigTable(fdata);}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+}
+
+function saveConfiguration(type,subtype){
+    // save configuration for type=true
+if(type){
+  if($("#type_combo").val() == null || $("#type_combo").val() == "Select" ){
+    alert("please select a type");
+    return;  
+  }
+  
+  var data = "{\"source\":\""+sourceincontext + "\",\"istype\":\""+type+ "\",\"comment\":\""+$("#comment").val()+"\",\"issubtype\":\""+subtype+"\",\"destination\":\"" + processvalue($("#type_combo").val())+"\"}";
+    
+  
+   $.ajax({
+        type: "POST",
+        url: "saveconfig.php",
+        data: data,
+        success: function(fdata){showConfigTable(fdata);}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+  
+    
+} else if(subtype){
+  if($("#subtype_combo").val() == null || $("#subtype_combo").val() == "Select" ){
+    alert("please select a subtype");
+    return;  
+  }
+  
+  var data = "{\"source\":\""+sourceincontext + "\",\"istype\":\""+type+"\",\"issubtype\":\""+subtype+"\",\"destination\":\"" + processvalue($("#subtype_combo").val())+"\"}";
+    
+  
+   $.ajax({
+        type: "POST",
+        url: "saveconfig.php",
+        data: data,
+        success: function(fdata){showConfigTable(fdata);}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+  
+    
+} else {
+
+
+
+if($("#value_combo").val() == null || $("#value_combo").val() == "Select"){
+alert("please select a type and value");
+return;
+
+}
+
+ var data = "{\"source\":\""+sourceincontext +  "\",\"istype\":\"0\",\"destination\":\"" + reprocessvalue($("#value_combo").val())+"\"}";
+   
+   $.ajax({
+        type: "POST",
+        url: "saveconfig.php",
+        data: data,
+        success: function(fdata){showConfigTable(fdata);}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+  
+  
+}
+}
+
+function showConfigTable(fedata){
+
+if(configtable){        
+  configtable.destroy();
+}
+if(fedata && fedata.length > 0)
+configtable = $('#configTable').DataTable( {
+                        aaData:JSON.parse(fedata),
+            "paging":false,
+
+            "columnDefs": [ {
+                "targets": -1,
+                "data": null,
+                "defaultContent": "<select id='disable_config'><option>Select</option><option value='Y'>Y</option><option value='N'>N</option></select>"
+             },{
+                "targets": -2,
+                "data": null,
+                "defaultContent": "<button id='delconfig'>Delete</button>"
+             },
+             {
+                "targets": -3,
+                "data": null,
+                "defaultContent": "<input id='rank_config' type='text'>"
+             }
+
+            ],
+            "columns": [
+            null,
+            null,
+            { "orderDataType": "dom-text-numeric" },
+            null,
+            { "orderDataType": "dom-select" }
+            ],
+             "rowCallback": function( row, data, index ) {
+                 console.log(data);
+                if(data[3]!=0){
+                    $('td:eq(2) #rank_config', row).val(data[3]);
+                } else {
+                    $('td:eq(2) #rank_config', row).val(999);
+                }
+                $('td:eq(4) #disable_config', row).val(data[4]);
+              },
+           searchHighlight: true
+           
+                } );
+
+$.fn.dataTable.ext.order['dom-select'] = function  ( settings, col )
+{
+    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+        return $('select', td).val();
+    } );
+}
+
+/* Create an array with the values of all the input boxes in a column, parsed as numbers */
+$.fn.dataTable.ext.order['dom-text-numeric'] = function  ( settings, col )
+{
+    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+        return $('input', td).val() * 1;
+    } );
+}
+
+$('#configTable tbody').on( 'change', '#rank_config', function () {
+        var data = configtable.row( $(this).parents('tr') ).data();
+        saveRankConfig(data[0],data[1],$(this).val());
+} );   
+
+$('#configTable tbody').on( 'change', '#disable_config', function () {
+        var data = configtable.row( $(this).parents('tr') ).data();
+        saveDisableConfig(data[0],data[1],$(this).val());
+} ); 
+
+$('#configTable tbody').on( 'click', '#delconfig', function () {
+    //var result = confirm("Want to delete?");
+if (true) {
+    //Logic to delete the item
+
+        var data = configtable.row( $(this).parents('tr') ).data();
+
+if(data){
+deleteConfig(data[0],data[1]);
+        configtable
+        .row( $(this).parents('tr') )
+        .remove()
+        .draw();
+}
+}
+} );
+
+
+}
+
+function getOptionHTML(){
+    var html;
+    for(var i=1;i<100;i++){
+        html = html + "<option value='"+i+"'>"+i+"</option>";
+    }
+    return html;
+}
+
+function saveDisableConfig(field1,field2,configval){
+      $.ajax({
+        type: "GET",
+        url: "savedisableconfig.php?source="+field1+"&destination="+field2+"&disabled="+configval,
+        success: function(fdata){
+        }, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+}
+
+function saveRankConfig(field1,field2,rank){
+    
+    
+    $.ajax({
+        type: "GET",
+        url: "saverankconfig.php?source="+field1+"&destination="+field2+"&rank="+rank,
+        success: function(fdata){
+        }, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+}
+function deleteConfig(src,dest){
+
+$.ajax({
+        type: "POST",
+        url: "deleteconfig.php?src="+src+"&dest="+dest,
+        success: function(fdata){
+        }, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+
+
+
+
+
+
+}
+
+	</script>
+
+</head>
+<body>
+
+ <div id="fade"></div>
+        <div id="modal">
+            <img id="loader" src="loading.gif"/>
+        </div>
+
+<div id="myTabs" class="container">
+  <ul>
+    
+    <li><a href="#tabs-1">Levels</a></li>
+    
+    
+  </ul>
+
+  
+  <input type="hidden" id="dataid">
+  
+  
+  <div id="tabs-1">
+    <div class="container">
+  <div style="white-space: nowrap;overflow: hidden">
+    <div style="width:20%;display: inline-block;">
+      <label for="email">Name:</label>
+      <input type="text" class="form-control" id="name" placeholder="Name">
+    </div>
+    <div style="width:20%;display: inline-block;">
+      <label for="email">App Label:</label>
+      <input type="text" class="form-control" id="label" placeholder="App Label">
+    </div>
+    <div style="width:20%;display: inline-block;">
+      <label for="workstation">Description:</label>
+      <input type="text" class="form-control" id="description"  placeholder="Description">
+    </div>
+      
+        <div style="width:20%;display: inline-block;">
+
+	      <label for="procedure_id">Type:</label>
+	      <input type="text" class="form-control" id="type" placeholder="Type">
+    </div>
+        
+        </div>
+        
+        <div class="form-group">
+        <div style="width:20%;display: inline-block;">
+
+	      <label for="procedure_id">Data:</label>
+	      <input type="text" class="form-control" id="data" placeholder="Data">
+         </div>
+    
+     <div style="width:20%;display: inline-block;">
+
+          <label for="procedure_id">Sub Type:</label>
+	      <input type="text" class="form-control" id="subtype" placeholder="Sub Type">
+    </div>
+    
+     <div style="width:20%;display: inline-block;">
+
+          <label for="procedure_id">Comment:</label>
+          <input type="text" class="form-control" id="comment1" placeholder="Sub Type">
+    </div>
+            
+</div>
+    <div class="form-group">
+		<button type="submit" class="btn btn-default" onclick="saveData()">Save</button>
+            <button type="submit" class="btn btn-default" onclick="clearData()">Clear</button>
+        </div>    
+      
+      
+<div style="width:100%">
+     <table id="example" class="table table-striped table-bordered" cellspacing="0">
+					<thead>
+						<tr>
+						  <th>ID</th>
+							<th>Name</th>
+                            <th>App Label</th>
+							<th>Description</th>
+							<th>Type</th>
+                            <th>Sub Type</th>
+							<th>Data</th>
+                             <th>Comment</th>
+                            <th>Edit</th>
+                            <th>Rank</th>
+                           <th>Command</th>
+		                    <th>Configure</th>				
+                            
+                             
+							
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+						   <th>ID</th>
+							<th>Name</th>
+                            <th>App Label</th>
+							<th>Description</th>
+							<th>Type</th>
+                            <th>Sub Type</th>
+							<th>Data</th>
+                             <th>Comment</th>
+                            <th>Edit</th>
+                            <th>Rank</th>
+                           <th>Command</th>
+						    <th>Configure</th>
+                            	
+                                
+                            
+						</tr>
+					</tfoot>
+		</table>
+    </div>
+
+     </div>
+    
+    
+  </div>
+  
+  
+  
+  
+ 
+  
+</div>
+
+
+
+ 
+</body>
+    
+ <div id="dialog-form" title="Configure">
+ <fieldset>
+    
+    <label for="procedure_id">Copy from Disease:</label>
+        <div id='disease'>
+           <select id="disease_combo">
+             <option>Select</option>
+          </select><button type="submit" class="btn btn-default" onclick="copyConfiguration(false)">Copy Configuration</button>
+        </div>
+  </fieldset>
+ 
+ 
+  <label for="procedure_id">Type:</label>
+<div id='type'>
+   <select id="type_combo"  onchange="typeChanged()">
+     <option>Select</option>
+  </select>
+</div>
+
+<label for="procedure_id">Sub Type:</label>
+<div id='subtype'>
+   <select id="subtype_combo"  onchange="subTypeChanged()">
+     <option>Select</option>
+  </select>
+</div>
+
+<label for="procedure_id">Select Value:</label>
+<div id='value'>
+   <select id="value_combo">
+    <option>Select</option>
+   </select>
+   
+</div>
+<br/>
+
+ <button type="submit" class="btn btn-default" onclick="saveConfiguration(false)">Add Value</button>
+ 
+ <button type="submit" class="btn btn-default" onclick="saveConfiguration(false,true)">Add Sub Type</button>
+ 
+  <button type="submit" class="btn btn-default" onclick="saveConfiguration(true)">Add Type</button>
+
+<table id="configTable" class="table table-striped table-bordered" cellspacing="0">
+					<thead>
+						<tr>
+						   
+							<th>Type</th>
+							<th>Name</th>
+                            <th>Rank</th>                            
+                            <th>Command</th>
+                            <th>Disable</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+						   
+							<th>Type</th>
+							<th>Name</th>
+                            <th>Rank</th>
+	                                                <th>Command</th>
+                                                    <th>Disable</th>
+						</tr>
+					</tfoot>
+		</table>
+</div>    
+
+</html>
+

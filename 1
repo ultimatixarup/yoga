@@ -1,0 +1,199 @@
+<?php
+include 'db.php';
+require 'vendor/autoload.php';
+
+use Aws\S3\S3Client;
+
+// Instantiate the client.
+$s3 = S3Client::factory();
+
+
+$bucket = 'getwellbyoga-yoga';
+					
+// Use the high-level iterators (returns ALL of your objects).
+$objects = $s3->getIterator('ListObjects', array('Bucket' => $bucket));
+$result = $s3->listObjects(array('Bucket' => $bucket));
+
+$query = "SELECT name,data,video_easy FROM node order by name";
+$res = mysql_query($query);
+if(mysql_num_rows($res)!=0) {
+    $parentarray = array();
+    $namearray = array();
+    while($rowData = mysql_fetch_assoc($res)) {
+     //echo "[$rowData['id']$,rowData['name']]"; 
+        $namedata = array($rowData['name'],$rowData['data'],$rowData['video_easy']);
+        array_push($parentarray,$namedata);
+        array_push($namearray,$rowData['name']);
+    }
+}
+
+
+
+
+
+function processData($data){
+    
+    $data = str_replace(" ", "^" , $data);
+    
+    return $data;
+}
+
+
+
+?>
+
+<html>
+<body>
+<head>
+ <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script language = "javascript">
+
+<?php
+function js_str($s)
+{
+    return '"' . addcslashes($s, "\0..\37\"\\") . '"';
+}
+
+function js_array($array)
+{
+    $temp = array_map('js_str', $array);
+    return '[' . implode(',', $temp) . ']';
+}
+
+echo 'var availableTags = ', js_array($namearray), ';';
+
+$video_easy = "";
+
+
+?>
+
+function playvideo(data){
+
+var video = decodeURIComponent(data);
+while(video.indexOf('+')>-1){
+video = video.replace('+', ' ');
+}
+//alert(video);
+
+$( function() {
+    $( "#dialog" ).empty();
+    $( "#dialog" ).append('<video width="300" height="300" controls poster="icons/playicon.png" preload="none"><source src="http://d1dcu4sbskithe.cloudfront.net/'+video+'" type="video/mp4"></video>');
+    $( "#dialog" ).dialog();
+  } );
+
+}
+
+function saveData(data,mode){
+ 
+ if(data == ""){
+   alert("Please select the asana");
+   return;
+ }
+ 
+ var videoid = data.split("#")[0];
+ var nodename = data.split("#")[1];
+ while(nodename.indexOf("^") > -1){
+    nodename = nodename.replace("^", " ");
+ }
+ 
+ 
+ var data = "{\"name\":\""+nodename.trim() + "\",\"video\":\"" + videoid+"\",\"easy\":\""+mode+"\"}";
+    
+  //alert(data);
+  
+   $.ajax({
+        type: "POST",
+        url: "savevideo.php",
+        contentType: "application/json",
+        data: data,
+        success: function(fdata){ alert(fdata);}, 
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+  });
+ 
+// alert(videoid + " " + nodename );
+ 
+}
+
+$(document).ready(function () {  
+    $('button').click(function () {
+      //console.log($(this).parent().children('select').eq(1).val());
+      
+      saveData($(this).parent().children('select').eq(0).val(),$(this).parent().children('input').is(':checked'));
+      
+    });    
+
+});
+
+function processData(data){
+
+ if(data.indexOf(" ") > 0){
+  data.replace(" ","@");
+ }
+}
+
+
+</script>
+</head>
+<table>
+<?php
+
+$vids  = array();
+
+foreach($result['Contents'] as $object){
+   $value =  $object['Key']; 
+   if(strrpos($value,".3gp") > 0){ 
+      array_push($vids,$value);
+   }
+
+}
+
+foreach($result['Contents'] as $object){
+   $value =  $object['Key'];
+   if(strrpos($value,".mp4") > 0){                    
+      array_push($vids,$value);
+   }
+
+}
+
+ 
+foreach ($value as $vids) {
+?><tr><td>
+<b>
+<?php echo $value; ?>
+<select id="nodenames">
+<option value=""> -- Select Name -- </option>
+<?php
+foreach ($parentarray as &$pvalue) {
+    if($value == $pvalue[2]){ 
+       $video_easy = "checked"; 
+    } 
+    
+    ?><option value=<?php echo '"'. $value."#".processData($pvalue[0]) . '"' ; if($value == $pvalue[1] || $value == $pvalue[2]){ echo "selected";} ?>><?php echo $pvalue[0]; ?></option>
+<?php 
+}
+?>
+</select>
+<input type="checkbox" <?php echo $video_easy; $video_easy="";    ?>> Easy Mode
+<button id="linkbtn">Link Video!</button>
+<input type="button" value="play" onclick=playvideo("<?php echo urlencode($value); ?>")>
+
+
+<br/>
+</td></tr>
+
+<?php
+}
+?>
+</table>
+<div id="dialog" title="Video" style="height:400px;width:450px;">
+  
+</div>
+
+</body>
+</html>
+
